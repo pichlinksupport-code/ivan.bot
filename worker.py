@@ -25,7 +25,7 @@ SUPABASE_KEY = env("SUPABASE_SERVICE_ROLE_KEY", required=True)
 JOB_NAME = env("JOB_NAME", "youtube_video_scheduler")
 RUN_INTERVAL_SECONDS = int(env("RUN_INTERVAL_SECONDS", "300"))
 CHECK_INTERVAL_SECONDS = int(env("CHECK_INTERVAL_SECONDS", "60"))
-MAX_RUN_SECONDS = int(env("MAX_RUN_SECONDS", "300"))
+MAX_RUN_SECONDS = int(env("MAX_RUN_SECONDS", "600"))
 
 
 def parse_iso(value):
@@ -98,6 +98,7 @@ def mark_running(sb):
     sb.table("scheduler_state").update({
         "status": "running",
         "last_error": None,
+        "last_run_at": utc_now().isoformat(),
         "updated_at": utc_now().isoformat(),
     }).eq("job_name", JOB_NAME).execute()
     return row
