@@ -60,8 +60,8 @@ BACKGROUND_VIDEO = env("BACKGROUND_VIDEO", "assets/background.mp4")  # file OR f
 BACKGROUND_MUSIC = env("BACKGROUND_MUSIC", "assets/music.mp3")      # file OR folder
 MUSIC_VOLUME = float(env("MUSIC_VOLUME", "0.12"))                   # 0.0 - 1.0
 
-VIDEO_WIDTH = int(env("VIDEO_WIDTH", "720"))     # 720x1280 = vertical Shorts (lower memory for containers)
-VIDEO_HEIGHT = int(env("VIDEO_HEIGHT", "1280"))  # use 1920x1080 for normal videos
+VIDEO_WIDTH = int(env("VIDEO_WIDTH", "540"))      # 540x960 = vertical Shorts (minimal memory for containers)
+VIDEO_HEIGHT = int(env("VIDEO_HEIGHT", "960"))    # use 1920x1080 for normal videos
 VIDEO_PRESET = env("VIDEO_PRESET", "veryfast")   # ffmpeg libx264 preset (veryfast|medium|slow)
 VIDEO_CRF = int(env("VIDEO_CRF", "23"))          # quality (19-28 typical, higher = smaller/faster)
 
@@ -104,7 +104,10 @@ def ask_openrouter(avoid):
         "You are a world-class motivational speechwriter. You write powerful, "
         "original spoken-word speeches meant to be read aloud by a calm, deep British male voice."
     )
-    user = f"""Write ONE brand-new motivational speech of about 220 words (about 90 seconds when spoken).
+    speech_length = int(env("SPEECH_LENGTH", "130"))  # target word count of the speech
+    speech_time = (speech_length / 220) * 90          # approximate duration in seconds
+
+    user = f"""Write ONE brand-new motivational speech of about {speech_length} words (about {int(speech_time)} seconds when spoken).
 
 Rules:
 - Spoken style: short punchy sentences, strong rhythm, no stage directions, no emojis, no markdown.
