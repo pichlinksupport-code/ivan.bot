@@ -4,8 +4,8 @@ import urllib.request
 
 # These files are too large to keep in GitHub, so Railway downloads them at runtime.
 FILES = {
-    "kokoro-v1.0.onnx": "https://example.com/kokoro-v1.0.onnx",
-    "voices-v1.0.bin": "https://example.com/voices-v1.0.bin",
+    "kokoro-v1.0.onnx": "https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0/kokoro-v1.0.onnx",
+    "voices-v1.0.bin": "https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0/voices-v1.0.bin",
 }
 
 
