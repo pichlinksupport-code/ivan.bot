@@ -60,8 +60,8 @@ BACKGROUND_VIDEO = env("BACKGROUND_VIDEO", "assets/background.mp4")  # file OR f
 BACKGROUND_MUSIC = env("BACKGROUND_MUSIC", "assets/music.mp3")      # file OR folder
 MUSIC_VOLUME = float(env("MUSIC_VOLUME", "0.12"))                   # 0.0 - 1.0
 
-VIDEO_WIDTH = int(env("VIDEO_WIDTH", "1080"))    # 1080x1920 = vertical (Shorts)
-VIDEO_HEIGHT = int(env("VIDEO_HEIGHT", "1920"))  # use 1920x1080 for normal videos
+VIDEO_WIDTH = int(env("VIDEO_WIDTH", "720"))     # 720x1280 = vertical Shorts (lower memory for containers)
+VIDEO_HEIGHT = int(env("VIDEO_HEIGHT", "1280"))  # use 1920x1080 for normal videos
 VIDEO_PRESET = env("VIDEO_PRESET", "veryfast")   # ffmpeg libx264 preset (veryfast|medium|slow)
 VIDEO_CRF = int(env("VIDEO_CRF", "23"))          # quality (19-28 typical, higher = smaller/faster)
 
