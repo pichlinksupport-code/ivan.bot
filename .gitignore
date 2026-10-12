@@ -13,6 +13,7 @@ venv/
 # Project output and generated media
 output/
 *.mp4
+!assets/background.mp4
 *.wav
 *.ass
 
