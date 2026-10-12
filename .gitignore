@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.venv/
+venv/
+
+# Environment and secrets
+.env
+.env.*
+
+# Project output and generated media
+output/
+*.mp4
+*.wav
+*.ass
+
+# OS/editor
+.DS_Store
+.vscode/
+
+# Logs
+*.log

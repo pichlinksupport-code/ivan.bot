@@ -1,0 +1,9 @@
+requests
+python-dotenv
+numpy
+soundfile
+supabase
+kokoro-onnx
+google-api-python-client
+google-auth-oauthlib
+google-auth-httplib2
