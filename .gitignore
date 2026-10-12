@@ -16,6 +16,11 @@ output/
 *.wav
 *.ass
 
+# Large AI model assets and voice files (keep local or upload separately)
+*.onnx
+*.bin
+*.bin.*
+
 # OS/editor
 .DS_Store
 .vscode/
