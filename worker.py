@@ -72,20 +72,29 @@ def ensure_state(sb):
     return created[0]
 
 
-def should_run(state):
+def seconds_until_run(state):
     if state.get("status") == "running":
-        return False
+        return None
 
     if state.get("status") == "failed":
         last_attempt_at = parse_iso(state.get("updated_at"))
         if last_attempt_at is not None:
-            return (utc_now() - last_attempt_at).total_seconds() >= RUN_INTERVAL_SECONDS
+            reference_time = last_attempt_at
+        else:
+            reference_time = parse_iso(state.get("last_run_at"))
+    else:
+        reference_time = parse_iso(state.get("last_run_at"))
 
-    last_run_at = parse_iso(state.get("last_run_at"))
-    if last_run_at is None:
-        return True
+    if reference_time is None:
+        return 0
 
-    return (utc_now() - last_run_at).total_seconds() >= RUN_INTERVAL_SECONDS
+    elapsed = (utc_now() - reference_time).total_seconds()
+    return max(0, int(RUN_INTERVAL_SECONDS - elapsed))
+
+
+def should_run(state):
+    remaining = seconds_until_run(state)
+    return remaining == 0
 
 
 def mark_running(sb):
@@ -150,7 +159,12 @@ def main():
             if should_run(state):
                 run_once()
             else:
-                print(f"[scheduler] Waiting for next trigger. Next run in {RUN_INTERVAL_SECONDS} sec.")
+                remaining = seconds_until_run(state)
+                if remaining is None:
+                    print(f"[scheduler] A run is already marked active for {JOB_NAME}.")
+                else:
+                    minutes, seconds = divmod(remaining, 60)
+                    print(f"[scheduler] Waiting for next trigger. Next run in {minutes:02d}:{seconds:02d}.")
         except Exception as exc:
             print(f"[scheduler] Error while checking schedule: {exc}")
 
