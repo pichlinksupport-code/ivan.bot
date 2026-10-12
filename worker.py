@@ -77,17 +77,9 @@ def ensure_state(sb):
 
 
 def seconds_until_run(state):
-    if state.get("status") == "running":
-        return None
-
-    if state.get("status") == "failed":
-        last_attempt_at = parse_iso(state.get("updated_at"))
-        if last_attempt_at is not None:
-            reference_time = last_attempt_at
-        else:
-            reference_time = parse_iso(state.get("last_run_at"))
-    else:
-        reference_time = parse_iso(state.get("last_run_at"))
+    # Use time-based scheduling only; never block on "running" status.
+    # (A crashed run leaves state="running" and would block forever.)
+    reference_time = parse_iso(state.get("last_run_at"))
 
     if reference_time is None:
         return 0
@@ -99,20 +91,6 @@ def seconds_until_run(state):
 def should_run(state):
     remaining = seconds_until_run(state)
     return remaining == 0
-
-
-def running_age_seconds(state):
-    started_at = parse_iso(state.get("updated_at"))
-    if started_at is None:
-        return None
-    return (utc_now() - started_at).total_seconds()
-
-
-def is_stale_running(state):
-    if state.get("status") != "running":
-        return False
-    age = running_age_seconds(state)
-    return age is None or age >= MAX_RUN_SECONDS
 
 
 def mark_running(sb):
@@ -186,19 +164,13 @@ def main():
     while True:
         try:
             state = ensure_state(sb)
-            if is_stale_running(state):
-                recover_stale_run(sb, state)
-                state = ensure_state(sb)
 
             if should_run(state):
                 run_once()
             else:
                 remaining = seconds_until_run(state)
-                if remaining is None:
-                    print(f"[scheduler] A run is already marked active for {JOB_NAME}.")
-                else:
-                    minutes, seconds = divmod(remaining, 60)
-                    print(f"[scheduler] Waiting for next trigger. Next run in {minutes:02d}:{seconds:02d}.")
+                minutes, seconds = divmod(remaining, 60)
+                print(f"[scheduler] Waiting for next trigger. Next run in {minutes:02d}:{seconds:02d}.")
         except Exception as exc:
             print(f"[scheduler] Error while checking schedule: {exc}")
 
