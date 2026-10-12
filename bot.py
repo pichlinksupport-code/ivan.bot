@@ -62,6 +62,8 @@ MUSIC_VOLUME = float(env("MUSIC_VOLUME", "0.12"))                   # 0.0 - 1.0
 
 VIDEO_WIDTH = int(env("VIDEO_WIDTH", "1080"))    # 1080x1920 = vertical (Shorts)
 VIDEO_HEIGHT = int(env("VIDEO_HEIGHT", "1920"))  # use 1920x1080 for normal videos
+VIDEO_PRESET = env("VIDEO_PRESET", "veryfast")   # ffmpeg libx264 preset (veryfast|medium|slow)
+VIDEO_CRF = int(env("VIDEO_CRF", "23"))          # quality (19-28 typical, higher = smaller/faster)
 
 YOUTUBE_CLIENT_ID = env("YOUTUBE_CLIENT_ID")
 YOUTUBE_CLIENT_SECRET = env("YOUTUBE_CLIENT_SECRET")
@@ -303,13 +305,14 @@ def render_video(voice_wav, ass_file, duration, out_mp4, workdir):
     )
     cmd = [
         "ffmpeg", "-y", "-hide_banner", "-loglevel", "error",
+        "-threads", "2",
         "-stream_loop", "-1", "-i", str(video),
         "-i", voice_wav.name,
         "-stream_loop", "-1", "-i", str(music),
         "-filter_complex", vf,
         "-map", "[v]", "-map", "[a]",
         "-t", f"{total:.2f}",
-        "-c:v", "libx264", "-preset", "medium", "-crf", "20", "-pix_fmt", "yuv420p",
+        "-c:v", "libx264", "-preset", VIDEO_PRESET, "-crf", str(VIDEO_CRF), "-pix_fmt", "yuv420p",
         "-c:a", "aac", "-b:a", "192k",
         "-movflags", "+faststart",
         str(out_mp4.resolve()),

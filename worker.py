@@ -23,7 +23,7 @@ def env(name, default=None, required=False):
 SUPABASE_URL = env("SUPABASE_URL", required=True)
 SUPABASE_KEY = env("SUPABASE_SERVICE_ROLE_KEY", required=True)
 JOB_NAME = env("JOB_NAME", "youtube_video_scheduler")
-RUN_INTERVAL_SECONDS = int(env("RUN_INTERVAL_SECONDS", "1800"))
+RUN_INTERVAL_SECONDS = int(env("RUN_INTERVAL_SECONDS", "300"))
 CHECK_INTERVAL_SECONDS = int(env("CHECK_INTERVAL_SECONDS", "60"))
 MAX_RUN_SECONDS = int(env("MAX_RUN_SECONDS", "900"))
 
