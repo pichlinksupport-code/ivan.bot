@@ -76,6 +76,11 @@ def should_run(state):
     if state.get("status") == "running":
         return False
 
+    if state.get("status") == "failed":
+        last_attempt_at = parse_iso(state.get("updated_at"))
+        if last_attempt_at is not None:
+            return (utc_now() - last_attempt_at).total_seconds() >= RUN_INTERVAL_SECONDS
+
     last_run_at = parse_iso(state.get("last_run_at"))
     if last_run_at is None:
         return True
