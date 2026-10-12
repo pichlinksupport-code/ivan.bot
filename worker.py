@@ -25,6 +25,7 @@ SUPABASE_KEY = env("SUPABASE_SERVICE_ROLE_KEY", required=True)
 JOB_NAME = env("JOB_NAME", "youtube_video_scheduler")
 RUN_INTERVAL_SECONDS = int(env("RUN_INTERVAL_SECONDS", "1800"))
 CHECK_INTERVAL_SECONDS = int(env("CHECK_INTERVAL_SECONDS", "60"))
+MAX_RUN_SECONDS = int(env("MAX_RUN_SECONDS", "900"))
 
 
 def parse_iso(value):
@@ -32,7 +33,10 @@ def parse_iso(value):
         return None
     if value.endswith("Z"):
         value = value[:-1] + "+00:00"
-    return datetime.fromisoformat(value)
+    parsed = datetime.fromisoformat(value)
+    if parsed.tzinfo is None:
+        return parsed.replace(tzinfo=timezone.utc)
+    return parsed
 
 
 def utc_now():
@@ -97,6 +101,20 @@ def should_run(state):
     return remaining == 0
 
 
+def running_age_seconds(state):
+    started_at = parse_iso(state.get("updated_at"))
+    if started_at is None:
+        return None
+    return (utc_now() - started_at).total_seconds()
+
+
+def is_stale_running(state):
+    if state.get("status") != "running":
+        return False
+    age = running_age_seconds(state)
+    return age is None or age >= MAX_RUN_SECONDS
+
+
 def mark_running(sb):
     row = ensure_state(sb)
     sb.table("scheduler_state").update({
@@ -125,6 +143,18 @@ def mark_failure(sb, error_text):
     }).eq("job_name", JOB_NAME).execute()
 
 
+def recover_stale_run(sb, state):
+    age = running_age_seconds(state)
+    age_text = "unknown age" if age is None else f"{int(age)} seconds"
+    message = f"Recovered stale running state after {age_text}; previous worker may have stopped unexpectedly."
+    sb.table("scheduler_state").update({
+        "status": "idle",
+        "last_error": message,
+        "updated_at": utc_now().isoformat(),
+    }).eq("job_name", JOB_NAME).execute()
+    print(f"[scheduler] {message}")
+
+
 def run_once():
     sb = create_client(SUPABASE_URL, SUPABASE_KEY)
     state = ensure_state(sb)
@@ -136,7 +166,7 @@ def run_once():
     print(f"[scheduler] Starting scheduled run for {JOB_NAME}...")
     try:
         mark_running(sb)
-        subprocess.run([sys.executable, "bot.py"], check=True)
+        subprocess.run([sys.executable, "bot.py"], check=True, timeout=MAX_RUN_SECONDS)
         mark_success(sb)
         print(f"[scheduler] Completed run for {JOB_NAME}.")
         return True
@@ -156,6 +186,10 @@ def main():
     while True:
         try:
             state = ensure_state(sb)
+            if is_stale_running(state):
+                recover_stale_run(sb, state)
+                state = ensure_state(sb)
+
             if should_run(state):
                 run_once()
             else:
