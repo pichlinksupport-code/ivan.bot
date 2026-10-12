@@ -25,7 +25,7 @@ SUPABASE_KEY = env("SUPABASE_SERVICE_ROLE_KEY", required=True)
 JOB_NAME = env("JOB_NAME", "youtube_video_scheduler")
 RUN_INTERVAL_SECONDS = int(env("RUN_INTERVAL_SECONDS", "300"))
 CHECK_INTERVAL_SECONDS = int(env("CHECK_INTERVAL_SECONDS", "60"))
-MAX_RUN_SECONDS = int(env("MAX_RUN_SECONDS", "600"))
+MAX_RUN_SECONDS = int(env("MAX_RUN_SECONDS", "900"))
 
 
 def parse_iso(value):
